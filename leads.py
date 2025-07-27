@@ -1,8 +1,8 @@
 import shutil
 from bs4 import BeautifulSoup
-from datetime import datetime
 from constants import BASE_URL, DUMP_LEADS_FILE
 from utils import clear_screen, get_key
+from interactions import fetch_interactions, send_interaction
 
 
 # ─ Fetch Leads ─────────────────────────────────────────────────────────────────
@@ -38,53 +38,7 @@ def fetch_leads(session, page):
     return leads
 
 
-# ─ Fetch Interactions ────────────────────────────────────────────────────────────
-def fetch_interactions(session, lead_id):
-    url = f"{BASE_URL}/Lead/ObterInteracoesAjax"
-    r = session.get(url, params={'id': lead_id})
-    soup = BeautifulSoup(r.text, 'html.parser')
-    raw = []
-    current_date = None
-    for header in soup.find_all('div', class_='chat-line'):
-        date_text = header.find('span', class_='chat-date').get_text(strip=True)
-        try:
-            current_date = datetime.strptime(date_text, '%d/%m/%Y').date()
-        except ValueError:
-            current_date = None
-    for msg in soup.find_all('div', class_='interacaoClienteMessenger'):
-        text = msg.find('div', class_='interacaoTeor').get_text(strip=True)
-        time_str = msg.find('div', class_='interacaoHorario').get_text(strip=True)
-        raw.append({'type': 'client', 'text': text, 'time': time_str, 'date': current_date})
-    for msg in soup.find_all('div', class_='interacaoLojaMessenger'):
-        text = msg.find('div', class_='interacaoTeor').get_text(strip=True)
-        time_str = msg.find('div', class_='interacaoHorario').get_text(strip=True)
-        author_tag = msg.find('div', style=lambda v: v and 'Feito por' in v)
-        author = author_tag.get_text(strip=True) if author_tag else 'Store'
-        raw.append({'type': 'store', 'text': text, 'time': time_str, 'author': author, 'date': current_date})
-    processed = []
-    for inter in raw:
-        dt_obj = None
-        if inter['date'] and inter.get('time'):
-            dt_str = f"{inter['date']} {inter['time']}"
-            try:
-                dt_obj = datetime.strptime(dt_str, '%Y-%m-%d %H:%M')
-            except ValueError:
-                dt_obj = None
-        inter['timestamp'] = dt_obj
-        processed.append(inter)
-    processed.sort(key=lambda x: x['timestamp'] or datetime.min)
-    return processed
 
-
-# ─ Send Interaction ────────────────────────────────────────────────────────────
-def send_interaction(session, lead_id, message):
-    url = f"{BASE_URL}/Lead/SalvarInteracao"
-    payload = {'Id': lead_id, 'Value': message}
-    r = session.post(url, json=payload)
-    try:
-        return r.json()
-    except ValueError:
-        return {'Success': False, 'Message': 'Invalid response'}
 
 
 
