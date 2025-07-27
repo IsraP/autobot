@@ -38,10 +38,6 @@ def fetch_leads(session, page):
     return leads
 
 
-
-
-
-
 # ─ Interactive Lead Navigation ─────────────────────────────────────────────────
 def navigate_leads(session):
     page = 1
@@ -73,39 +69,60 @@ def navigate_leads(session):
             idx += 1
         elif key == 'ENTER' and leads:
             lead = leads[idx]
-            interactions = fetch_interactions(session, lead['Id'])
-            clear_screen()
             term_width = shutil.get_terminal_size((80, 20)).columns
-            print(f"Interactions for Lead {lead['ClienteNome']} (ID {lead['Id']})")
-            for inter in interactions:
-                if inter['type'] == 'client':
-                    label = f"Client [{inter['time']}]"
-                    print(label)
-                    for line in inter['text'].split('\n'):
-                        print(line)
-                    print()
-                else:
-                    author = inter.get('author', 'Store')
-                    label = f"{author} [{inter['time']}]"
-                    print(label.rjust(term_width))
-                    for line in inter['text'].split('\n'):
-                        print(line.rjust(term_width))
-                    print()
-            choice = input("\n(V)iew again, (S)end message, or (B)ack: ").strip().lower()
-            if choice == 's':
-                msg = input('Enter your message: ').strip()
-                while True:
-                    resp = send_interaction(session, lead['Id'], msg)
-                    if resp.get('Success'):
-                        print(f"✅ Sent: {resp.get('Message')}")
-                        break
-                    else:
-                        print(f"❌ Failed: {resp.get('Message')}")
-                        retry = input('Retry? (y/N): ').strip().lower()
-                        if retry not in ('y','yes'):
-                            break
-                input('Press any key to refresh conversation...')
+
+            # show once to start
+            display_interactions(session, lead, term_width)
+
+            # loop until they back out
+            while True:
+                choice = input("\n(V)iew again, (S)end message, or (B)ack: ").strip().lower()
+                if choice == 'v':
+                    display_interactions(session, lead, term_width)
+                elif choice == 's':
+                    prompt_and_send_interaction(session, lead['Id'])
+                    # immediately reload and show
+                    display_interactions(session, lead, term_width)
+                else:  # back or anything else
+                    break
+
+            # once they back out, reload leads list and cursor
             leads = load(page)
             idx = 0
         elif key == 'QUIT':
             break
+
+def display_interactions(session, lead, term_width):
+    """Fetch, print and return the list of interactions for this lead."""
+    interactions = fetch_interactions(session, lead['Id'])
+    clear_screen()
+    print(f"Interactions for Lead {lead['ClienteNome']} (ID {lead['Id']})")
+    for inter in interactions:
+        if inter['type'] == 'client':
+            label = f"Client [{inter['time']}]"
+            print(label)
+            for line in inter['text'].split('\n'):
+                print(line)
+        else:
+            author = inter.get('author', 'Store')
+            label = f"{author} [{inter['time']}]"
+            print(label.rjust(term_width))
+            for line in inter['text'].split('\n'):
+                print(line.rjust(term_width))
+        print()
+    return interactions
+
+
+def prompt_and_send_interaction(session, lead_id):
+    """Ask the user for a message, post it, and retry on failure."""
+    msg = input('Enter your message: ').strip()
+    while True:
+        resp = send_interaction(session, lead_id, msg)
+        if resp.get('Success'):
+            print(f"✅ Sent: {resp.get('Message')}")
+            break
+        else:
+            print(f"❌ Failed: {resp.get('Message')}")
+            if input('Retry? (y/N): ').strip().lower() not in ('y','yes'):
+                break
+    input('Press any key to continue...')
