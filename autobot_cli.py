@@ -2,7 +2,7 @@
 import argparse
 from pyfiglet import figlet_format
 from session import create_new_session, create_api_session, load_session
-from leads import navigate_leads
+from leads import navigate_leads, extract_leads
 
 # ─ Main CLI Flow ────────────────────────────────────────────────────────────────
 def main():
@@ -20,7 +20,18 @@ def main():
         session = create_new_session(args)
 
     print("\nUse arrow keys to browse leads, Enter to select, Ctrl+Z or 'q' to quit.")
-    navigate_leads(session)
+    print('Escolha uma das opções:\n')
+    print('1 - Navegar nos Leads\n')
+    print('2 - Extrator\n')
+    option = input('Selecione uma opção: ').strip()
+    match(option):
+        case '1':
+            navigate_leads(session)
+        case '2':
+            extract_leads(session)
+        case _:
+            return None
+    
 
 if __name__ == '__main__':
     main()
