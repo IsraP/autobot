@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: autobot-api
+Version: 0.1.0
+Summary: Auto-API
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: beautifulsoup4~=4.13.4
+Requires-Dist: requests~=2.32.4
+Requires-Dist: playwright~=1.54.0
+Requires-Dist: pyfiglet~=1.0.3
+Requires-Dist: fastapi~=0.116.1
+Requires-Dist: uvicorn[standard]~=0.30.6
+Requires-Dist: passlib[bcrypt]~=1.7.4
+Requires-Dist: PyJWT~=2.9.0
+Requires-Dist: python-multipart
+Dynamic: license-file
+
+# autobot

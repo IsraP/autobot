@@ -33,7 +33,7 @@ Write-Host "🔌 Activating virtual environment..."
 & "$venvPath\Scripts\Activate.ps1"
 
 # 3. Install requirements if needed
-$reqFile = Join-Path $ProjectDir 'requirements.txt'
+$reqFile = Join-Path $ProjectDir '/cli/requirements.txt'
 if (Test-Path $reqFile) {
     Write-Host "📦 Installing/upgrading Python dependencies from requirements.txt..."
     pip install --upgrade pip
@@ -44,5 +44,6 @@ if (Test-Path $reqFile) {
 
 # 4. Launch the Autobot CLI in headful mode
 Write-Host '🚀 Launching Autobot CLI (headful)...'
-$scriptPath = Join-Path $ProjectDir 'autobot_cli.py'
+$env:PYTHONPATH="cli"
+$scriptPath = Join-Path $ProjectDir 'cli/autobot_cli.py'
 & python $scriptPath '--headful'

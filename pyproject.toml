@@ -1,0 +1,25 @@
+# pyproject.toml (at repo root)
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autobot-api"
+version = "0.1.0"
+description = "Auto-API"
+readme = "README.md"
+requires-python = ">=3.11"
+# We'll read dependencies from api/requirements.txt dynamically:
+dynamic = ["dependencies"]
+
+[tool.setuptools]
+# Make "api/" the import root so you can `from application import ...`
+package-dir = {"" = "api"}
+
+[tool.setuptools.packages.find]
+where = ["api"]
+include = ["*"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["api/requirements.txt"] }

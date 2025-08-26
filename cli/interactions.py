@@ -6,7 +6,7 @@ from constants import BASE_URL
 def fetch_interactions(session, lead_id):
     url = f"{BASE_URL}/Lead/ObterInteracoesAjax"
     r = session.get(url, params={'id': lead_id})
-    soup = BeautifulSoup(r.text, 'html.parser')
+    soup = BeautifulSoup(r.extract_text, 'html.parser')
 
     interactions = []
     current_date = None

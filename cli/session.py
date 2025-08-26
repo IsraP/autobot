@@ -3,9 +3,7 @@ import argparse
 import asyncio
 import getpass
 import json
-import sys
 import time
-from pathlib import Path
 
 import requests
 from playwright.async_api import async_playwright
