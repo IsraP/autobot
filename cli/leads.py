@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 from constants import BASE_URL, DUMP_LEADS_FILE
 from utils import clear_screen, get_key
 from interactions import fetch_interactions, send_interaction
-
-
+import csv
+import time
 # ─ Fetch Leads ─────────────────────────────────────────────────────────────────
 def fetch_leads(session, page):
     url = f"{BASE_URL}/Lead/ObterleadsAjax"
@@ -126,3 +126,64 @@ def prompt_and_send_interaction(session, lead_id):
             if input('Retry? (y/N): ').strip().lower() not in ('y','yes'):
                 break
     input('Press any key to continue...')
+    
+    
+
+def extract_leads(session):
+    nome_arquivo = 'conversas.csv'
+    page = 1
+    leads = fetch_leads(session, page)
+    linhas_csv = []
+    while(len(leads) > 0):
+        print(f"pagina {page}  totalLeads:{len(leads)}")
+        for lead in leads:
+            interactions = fetch_interactions(session, lead['Id'])
+            nome_cliente = lead.get('ClienteNome', 'Desconhecido')
+
+            acumulador_loja = []
+            acumulador_cliente = []
+            ultimo_tipo = None
+
+            def salvar_bloco():
+                if acumulador_loja or acumulador_cliente:
+                    linhas_csv.append([
+                        nome_cliente,
+                        ' | '.join(acumulador_loja).strip(),
+                        ' | '.join(acumulador_cliente).strip(),
+                        ''
+                    ])
+
+            for inter in interactions:
+                tipo = inter['type']
+                texto = inter['text'].strip()
+            
+
+
+
+                # Mudança de tipo = salva bloco anterior
+                if tipo != ultimo_tipo and ultimo_tipo is not None and ultimo_tipo == 'client':
+                    salvar_bloco()
+                    acumulador_loja = []
+                    acumulador_cliente = []
+
+                if tipo == 'client':
+                    acumulador_cliente.append(texto)
+                elif tipo == 'store':
+                    acumulador_loja.append(texto)
+
+                ultimo_tipo = tipo
+
+            # Salvar o último bloco pendente
+            salvar_bloco()
+            time.sleep(1)
+        page =page+ 1
+        leads = fetch_leads(session, page)
+
+    # Escreve tudo no CSV no final
+    with open(nome_arquivo, mode='w', newline='', encoding='utf-8') as arquivo_csv:
+        escritor = csv.writer(arquivo_csv, delimiter=';')
+        escritor.writerow(['Nome', 'Loja', 'Usuario', 'Data'])
+        escritor.writerows(linhas_csv)
+
+    print(f'Arquivo \"{nome_arquivo}\" criado com sucesso com {len(linhas_csv)} linhas."')
+    return None
