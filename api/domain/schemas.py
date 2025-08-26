@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, time, datetime
 from enum import Enum
 from typing import Optional
 
@@ -21,6 +21,11 @@ class Car(BaseModel):
 
     class Config:
         exclude_none = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat(),
+            date: lambda v: v.isoformat(),
+            time: lambda v: v.strftime("%H:%M"),
+        }
 
 class Lead(BaseModel):
     id: str
@@ -28,11 +33,16 @@ class Lead(BaseModel):
     last_client_message: str
     car: Optional[Car] = None
     is_birthday: Optional[bool] = None
-    received_at: datetime.datetime
-    updated_at: datetime.datetime
+    received_at: datetime
+    updated_at: datetime
 
     class Config:
         exclude_none = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat(),
+            date: lambda v: v.isoformat(),
+            time: lambda v: v.strftime("%H:%M"),
+        }
 
 
 class InteractionOrigin(str, Enum):
@@ -42,11 +52,16 @@ class InteractionOrigin(str, Enum):
 
 class Interaction(BaseModel):
     origin: InteractionOrigin
-    sent_at: datetime.time
+    sent_at: time
     content: str
 
     class Config:
         json_encoders = {
             Enum: lambda v: v.value,
-            datetime.time: lambda v: v.strftime("%H:%M"),
+            time: lambda v: v.strftime("%H:%M"),
         }
+
+
+class Answer(BaseModel):
+    intent: str
+    content: str

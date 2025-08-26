@@ -6,6 +6,7 @@ from datetime import datetime, date, time
 from typing import List, Optional, Tuple
 
 from application.constants import TZ_SP
+from domain.context import persist_leads
 from domain.schemas import Lead, Car
 from infrastructure.autocerto import get_leads_by_page
 
@@ -19,7 +20,11 @@ Fetch HTML for a page of leads and return the parsed Lead objects.
 """
 def fetch_leads(page: int, session: requests.Session) -> list[Lead]:
     page_html = get_leads_by_page(page, session)
-    return parse_page(page_html)
+
+    leads = parse_page(page_html)
+    persist_leads(leads)
+
+    return leads
 
 
 """

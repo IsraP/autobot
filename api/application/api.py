@@ -38,3 +38,5 @@ async def list_leads(page: int = 1, session: requests.Session = Depends(get_user
 @app.get("/leads/{lead_id}/interactions", response_model=List[Interaction])
 async def list_interactions(lead_id: str, session: requests.Session = Depends(get_user_session)):
     return await anyio.to_thread.run_sync(fetch_interactions, lead_id, session)
+
+# @app.post("/leads/{lead_id}/interactions/draft", response_model=Interaction):

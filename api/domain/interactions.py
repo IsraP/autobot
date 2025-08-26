@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup, Tag
 from datetime import time
 
 from application.constants import TZ_SP
+from domain.context import persist_interactions
 from domain.schemas import Interaction, InteractionOrigin
 from infrastructure.autocerto import get_interactions_by_lead
 
@@ -17,7 +18,10 @@ Fetch HTML for a page of leads and return the parsed Lead objects.
 def fetch_interactions(lead_id: str, session: requests.Session):
     page_html = get_interactions_by_lead(lead_id, session)
 
-    return parse_interactions(page_html)
+    interactions = parse_interactions(page_html)
+    persist_interactions(lead_id, interactions)
+
+    return interactions
 
 
 """
