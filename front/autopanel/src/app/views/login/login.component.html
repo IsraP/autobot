@@ -1,18 +1,18 @@
 <div class="login-content">
 <section class="login-card" role="form" aria-labelledby="login-title">
-    <img src="1-ccc5d6c2.png" class="login-logo" alt="Logo">
+    <img src="LogoPNGAzul.png" class="login-logo" alt="Logo">
     <h1 id="login-title" class="login-card__title">Entrar</h1>
 
-    <form class="login-card__form" action="#" method="post" autocomplete="on">
+    <form [formGroup]="formGroup" class="login-card__form" action="#" method="post" autocomplete="on">
        
         <div class="field">
             <label for="usuario" class="field__label">Usuário</label>
-            <input type="text" id="usuario" name="usuario" class="field__input" required placeholder="usuário" />
+            <input formControlName="user" type="text" id="usuario" name="usuario" class="field__input" required placeholder="usuário" />
         </div>
 
         <div class="field">
             <label for="senha" class="field__label">Senha</label>
-            <input type="password" id="senha" name="senha" class="field__input" required placeholder="senha" />
+            <input formControlName="password" type="password" id="senha" name="senha" class="field__input" required placeholder="senha" />
         </div>
 
         <button (click)="login()" type="submit" class="btn btn--primary">Logar</button>

@@ -7,21 +7,17 @@
     <aside class="sidebar">
       <h2 class="sidebar__title">Leads</h2>
       <ul class="lead-list">
-        <li class="lead">
-          <div class="lead__info">
-            <span class="lead__name">João Silva</span>
-            <span class="lead__time">Ontem</span>
-          </div>
-          <p class="lead__last">"Olá, estou interessado..."</p>
-        </li>
-        <li class="lead">
-          <div class="lead__info">
-            <span class="lead__name">Maria Souza</span>
-            <span class="lead__time">10:23</span>
-          </div>
-          <p class="lead__last">"Pode me enviar mais fotos?"</p>
-        </li>
+        @for (lead of clientes; track lead.id) {
+          <li class="lead" (click)="mostrarConversa(lead.id)">
+            <div class="lead__info">
+              <span class="lead__name">{{ lead.client }}</span>
+              <span class="lead__time">{{ lead.updated_at | date:'short' }}</span>
+            </div>
+            <p class="lead__last">{{ lead.last_client_message | slice:0:50 }}{{ lead.last_client_message.length > 50 ? '...' : '' }}</p>
+          </li>
+        }
       </ul>
+
     </aside>
 
     <!-- Chat -->
@@ -39,21 +35,12 @@
 
       <!-- Mensagens -->
       <section class="chat__messages">
-        <div class="message received">
-          <p>Olá, gostaria de saber mais sobre o carro.</p>
-          <span class="time">10:15</span>
-        </div>
-        <div class="message sent">
-          <p>Claro! Qual modelo você tem interesse?</p>
-          <span class="time">10:16</span>
-        </div>
-        <div class="message received">
-          <p>No Civic 2019, por favor.</p>
-          <span class="time">10:17</span>
-        </div>
-        <div class="message sent">
-          <p>Perfeito, vou separar as informações e já te envio.</p>
-          <span class="time">10:18</span>
-        </div>
+        @for (mensagem of conversa; track mensagem) {
+          <div class="message" 
+              [ngClass]="{ 'received': mensagem.origin === 'CLIENT', 'sent': mensagem.origin === 'STORE' }">
+            <p>{{ mensagem.content }}</p>
+            <span class="time">{{ mensagem.sent_at }}</span>
+          </div>
+        }
       </section>
     </main>
