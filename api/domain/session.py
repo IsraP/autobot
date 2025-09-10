@@ -9,7 +9,6 @@ from infrastructure.autocerto import login_and_get_cookies
 
 current_sessions = dict()
 
-
 """
 Attempts to authenticate a user with given credentials.
 """

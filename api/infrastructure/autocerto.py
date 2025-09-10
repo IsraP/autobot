@@ -1,11 +1,17 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 from playwright.async_api import BrowserContext, Page
-from application.constants import BASE_URL, FETCH_LEADS_PATH, FETCH_INTERACTIONS_PATH
 import requests
 
+from application.constants import BASE_URL, FETCH_LEADS_PATH, FETCH_INTERACTIONS_PATH, API_BASE_URL, API_OAUTH_PATH, \
+    API_USERNAME, API_PASSWORD, API_CAR_PATH, PUBLISH_INTERACTION_PATH
+from domain.schemas import CarInfoApi, Interaction
 
 GET_LEADS_BY_PAGE = BASE_URL + FETCH_LEADS_PATH
 GET_INTERACTIONS_BY_LEAD = BASE_URL + FETCH_INTERACTIONS_PATH
+PUBLISH_INTERACTION = BASE_URL + PUBLISH_INTERACTION_PATH
+
+API_OAUTH_URL = API_BASE_URL + API_OAUTH_PATH
+API_CAR_URL = API_BASE_URL + API_CAR_PATH
 
 
 """
@@ -78,3 +84,50 @@ def get_interactions_by_lead(lead_id: str, session: requests.Session):
     request = session.get(GET_INTERACTIONS_BY_LEAD, params={'id': lead_id})
 
     return request.text
+
+
+
+def publish_interaction(lead_id: str, interaction: Interaction, session: requests.Session):
+    request = session.post(PUBLISH_INTERACTION, json={'Id': lead_id, "Value": interaction.content})
+
+    return request.text
+
+"""
+Builds a token for the internal autocerto API
+"""
+def build_api_token():
+    payload = {
+        'grant_type': 'password',
+        'username': API_USERNAME,
+        'password': API_PASSWORD,
+    }
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    response = requests.post(API_OAUTH_URL, data=payload, headers=headers)
+
+    return response.json().get('access_token')
+
+
+"""
+Fetches a car's information
+"""
+def fetch_car_info(car_plate: str) -> Optional[CarInfoApi]:
+    token = build_api_token()
+
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+
+    path = API_CAR_URL + f'?placa={car_plate}'
+
+    response = requests.get(path, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        if data:
+            return CarInfoApi(**data[0])
+
+    return None
+

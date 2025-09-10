@@ -5,9 +5,10 @@ import os
 from datetime import datetime, date, time
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from domain.schemas import Interaction, Lead
+from infrastructure.autocerto import fetch_car_info
 
 # ==============================
 # High-level API
@@ -28,8 +29,14 @@ def persist_leads(leads: List[Lead]):
         else:
             lead_ctx["car"] = lead.car.model_dump(mode="json")
 
+            if lead.car.plate is not None and lead.car.plate != "":
+                persist_car_info(lead.car.plate)
+
         lead_ctx["client"] = lead.client
         lead_ctx["updated_at"] = lead.updated_at
+        lead_ctx["lead"] = {
+            "id": lead.id,
+        }
 
         save_context(lead.id, lead_ctx)
 
@@ -42,6 +49,13 @@ def persist_interactions(lead_id: str, interactions: List[Interaction]) -> None:
     ctx["interactions"] = [it.model_dump(mode="json") for it in interactions]
 
     save_context(lead_id, ctx)
+
+
+def persist_car_info(plate: str, ctx: Dict[str, Any]) -> None:
+    car_info = fetch_car_info(plate)
+
+    if car_info is not None:
+        ctx["desired_car_info"] = car_info
 
 
 # ==============================
@@ -136,7 +150,9 @@ def delete_context_key(lead_id: str, key: str) -> None:
 # Optional helpers
 # ==============================
 
-
+"""
+Checks whether a lead should be updated or persisted
+"""
 def should_process(lead_updated_at: datetime, persisted_updated_at: str) -> bool:
     return str(persisted_updated_at) != str(lead_updated_at)
 
@@ -168,7 +184,7 @@ def default_encoder(obj):
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
     if isinstance(obj, time):
-        return obj.strftime("%H:%M")   # if you want time-only like “08:11”
+        return obj.strftime("%H:%M")
     if isinstance(obj, Enum):
         return obj.value
     if isinstance(obj, Path):

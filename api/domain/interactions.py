@@ -8,7 +8,7 @@ from datetime import time
 from application.constants import TZ_SP
 from domain.context import persist_interactions
 from domain.schemas import Interaction, InteractionOrigin
-from infrastructure.autocerto import get_interactions_by_lead
+from infrastructure.autocerto import get_interactions_by_lead, publish_interaction
 
 tz = TZ_SP
 
@@ -46,6 +46,11 @@ def parse_interactions(html: str) -> List[Interaction]:
         )
 
     return interactions
+
+
+def publish_interactions(lead_id: str, interactions: List[Interaction], session: requests.Session):
+    for interaction in interactions:
+        publish_interaction(lead_id, interaction, session)
 
 
 # ==============================
