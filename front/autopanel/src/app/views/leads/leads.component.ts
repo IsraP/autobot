@@ -34,7 +34,7 @@ export class LeadsComponent implements OnInit{
       "Authorization": `Bearer ${JSON.parse(this.session).access_token}`
     });
     var item = sessionStorage.getItem("clientes")
-    if(item)
+    //if(item)
    // this.clientes = JSON.parse(item)
     this.http.get<cliente[]>("http://localhost:8000/leads?page=1",{headers:head}).subscribe((res) =>{
       console.log(res)
@@ -47,7 +47,7 @@ export class LeadsComponent implements OnInit{
       "Authorization": `Bearer ${JSON.parse(this.session).access_token}`
     });
     var item = sessionStorage.getItem("conversa")
-    if(item)
+    //if(item)
     //this.conversa = JSON.parse(item)
     this.http.get<mensagem[]>(`http://localhost:8000/leads/${id}/interactions`,{headers:head}).subscribe((res) =>{
       console.log(res)
