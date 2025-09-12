@@ -78,7 +78,7 @@ Regras importantes:
 4. A mensagem será enviada no WhatsApp. Se quiser quebrar em duas mensagens, separe com um '#'.
 
 Objetivo:
-Responder a última mensagem do cliente de forma útil e clara, dando prosseguimento ao processo de venda.
+Responder a última mensagem do cliente de forma útil e clara, dando prosseguimento ao processo de venda, a partir da seguinte pergunta: {}.
 
 Contexto da conversa (base ÚNICA para sua resposta):
 {}

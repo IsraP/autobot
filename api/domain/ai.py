@@ -25,12 +25,12 @@ def build_draft(lead_id: str):
 
     action = ctx.get("action", None) or must_answer(ctx)
 
-    answer_interaction = None
-    if action == "ANSWER":
-        answer_interaction = answer(ctx)
+    # answer_interaction = None
+    # if action == "ANSWER":
+    #     answer_interaction = answer(ctx)
 
     question_interaction = ask(ctx, store_config)
-    return [answer_interaction, question_interaction]
+    return [question_interaction]
 
 
 
@@ -84,7 +84,7 @@ def define_next_question(ctx: dict, intent: str):
 
 
 def ask(ctx: dict, store_config: dict) -> Interaction:
-    intent = ctx["intent"]
+    intent = ctx.get("intent",{})
 
     if intent is None:
         ctx["intent"] = intent = define_intent(ctx)
@@ -95,7 +95,7 @@ def ask(ctx: dict, store_config: dict) -> Interaction:
         print("ACABOU")
 
     current_ctx = enrich_context(ctx)
-    content = generate_message(current_ctx)
+    content = generate_message(current_ctx,question)
 
     message = build_interaction(content)
     # message = policy_guardrail(message, store_config)
@@ -140,10 +140,10 @@ def define_intent(ctx: dict) -> str:
 
 
 
-def generate_message(ctx: Dict[str, Any]):
+def generate_message(ctx: Dict[str, Any], question):
     llm = get_llm()
 
-    system_msg = INTERACTION_PROMPT.format(ctx["loja"]["nome"], json.dumps(ctx, ensure_ascii=False, indent=2))
+    system_msg = INTERACTION_PROMPT.format(ctx["loja"]["nome"],question, json.dumps(ctx, ensure_ascii=False, indent=2))
 
     resposta = llm.invoke(system_msg)
 

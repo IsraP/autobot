@@ -55,7 +55,7 @@ async def build_draft_interaction(lead_id: str):
     return await anyio.to_thread.run_sync(build_draft, lead_id)
 
 
-@app.post("/leads/{lead_id}/interactions/draft", response_model=List[Interaction])
+@app.post("/leads/{lead_id}/interactions", response_model=List[Interaction])
 async def post_interactions(lead_id: str, interactions: List[Interaction] = Body(...), session: requests.Session = Depends(get_user_session)):
     return await anyio.to_thread.run_sync(publish_interactions, lead_id, interactions, session)
 
