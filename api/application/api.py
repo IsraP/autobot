@@ -11,6 +11,7 @@ from application.security import get_user_session
 from domain.session import authenticate_user
 from domain.leads import fetch_leads
 from domain.interactions import fetch_interactions, publish_interactions
+from domain.ai import build_draft
 from infrastructure.playwright import lifespan, fetch_browser_context
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -50,8 +51,8 @@ async def list_interactions(lead_id: str, session: requests.Session = Depends(ge
 
 
 @app.post("/leads/{lead_id}/interactions/draft", response_model=List[Interaction])
-async def build_draft(lead_id: str, session: requests.Session = Depends(get_user_session)):
-    return await anyio.to_thread.run_sync(build_draft, lead_id, session)
+async def build_draft_interaction(lead_id: str):
+    return await anyio.to_thread.run_sync(build_draft, lead_id)
 
 
 @app.post("/leads/{lead_id}/interactions/draft", response_model=List[Interaction])

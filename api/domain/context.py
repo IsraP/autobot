@@ -30,7 +30,7 @@ def persist_leads(leads: List[Lead]):
             lead_ctx["car"] = lead.car.model_dump(mode="json")
 
             if lead.car.plate is not None and lead.car.plate != "":
-                persist_car_info(lead.car.plate)
+                persist_car_info(lead.car.plate, lead_ctx)
 
         lead_ctx["client"] = lead.client
         lead_ctx["updated_at"] = lead.updated_at
@@ -55,7 +55,7 @@ def persist_car_info(plate: str, ctx: Dict[str, Any]) -> None:
     car_info = fetch_car_info(plate)
 
     if car_info is not None:
-        ctx["desired_car_info"] = car_info
+        ctx["autocerto"] = car_info.model_dump(mode="json")
 
 
 # ==============================

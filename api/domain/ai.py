@@ -1,42 +1,63 @@
+import json
 import random
+from datetime import datetime, time
+from typing import Dict, Any
 
-from application.constants import BUY_QUESTIONS, TRADE_QUESTIONS
+from langchain_community.chat_models import ChatOllama
+
+from application.constants import BUY_QUESTIONS, TRADE_QUESTIONS, INTERACTION_PROMPT, INTENT_PROMPT
 from domain.context import load_context, save_context
+from domain.schemas import Interaction, InteractionOrigin
 from domain.store import load_store
-from infrastructure.autocerto import fetch_car_info
+
+def get_llm():
+    return ChatOllama(
+        model="gpt-oss:20b",
+        model_kwargs={
+            "thinking": False
+        }
+    )
 
 
 def build_draft(lead_id: str):
     ctx = load_context(lead_id)
     store_config = load_store("Ellegance")
 
-    action = ctx.get("action", None) or must_answer()
+    action = ctx.get("action", None) or must_answer(ctx)
 
-    answer = None
+    answer_interaction = None
     if action == "ANSWER":
-        answer = generate_message(ctx)
+        answer_interaction = answer(ctx)
 
-    question = ask(ctx, store_config)
-    return [answer, question]
+    question_interaction = ask(ctx, store_config)
+    return [answer_interaction, question_interaction]
 
 
-def ask(ctx: dict, store_config: dict):
-    intent = ctx["intent"]
 
-    if intent is None:
-        ctx["intent"] = intent = define_intent(ctx)
+def must_answer(ctx: dict) -> str:
+    interactions = ctx.get("interactions") or []
+    if not interactions:
+        return "ASK"
 
-    question = define_next_question(ctx, intent)
+    last = interactions[-1]
+    origin = (last.get("origin") or "").strip().upper()
 
-    if not question:
-        print("ACABOU")
+    if origin == "CLIENT":
+        return "ANSWER"
 
-    ctx = enrich_context(ctx)
+    return "ASK"
 
-    message = build_interaction(ctx, question)
-    message = policy_guardrail(message, store_config)
+
+
+def answer(ctx: dict) -> Interaction:
+    current_ctx = enrich_context(ctx)
+
+    content = generate_message(current_ctx)
+
+    message = build_interaction(content)
 
     return message
+
 
 
 def define_next_question(ctx: dict, intent: str):
@@ -61,14 +82,78 @@ def define_next_question(ctx: dict, intent: str):
     return next_question
 
 
+
+def ask(ctx: dict, store_config: dict) -> Interaction:
+    intent = ctx["intent"]
+
+    if intent is None:
+        ctx["intent"] = intent = define_intent(ctx)
+
+    question = define_next_question(ctx, intent)
+
+    if not question:
+        print("ACABOU")
+
+    current_ctx = enrich_context(ctx)
+    content = generate_message(current_ctx)
+
+    message = build_interaction(content)
+    # message = policy_guardrail(message, store_config)
+
+    return message
+
+
 def enrich_context(ctx: dict):
-    if "car" in ctx:
-        car = ctx["car"]
+    car = ctx.get("car") or {}
+    ac = ctx.get("autocerto") or {}
 
-        if "autocerto" not in car:
-            car["autocerto"] = fetch_car_info(car["plate"])
-            save_context(ctx["lead"]["id"], car)
+    store_ctx = {
+        "nome": "Ellegance Automoveis"
+    }
 
-    return ctx
+    car_ctx = {
+        "nome": car.get("name") or f"{ac.get('brand', '')} {ac.get('model', '')}".strip(),
+        "versao": car.get("model") or ac.get("version"),
+        "ano": car.get("year") or f"{ac.get('manufacture_year')}/{ac.get('model_year')}",
+        "preco": car.get("price") or ac.get("price"),
+        "km": ac.get("mileage"),
+        "cambio": ac.get("transmission"),
+        "combustivel": ac.get("fuel"),
+        "cor": ac.get("color"),
+        "placa": ac.get("plate") or car.get("plate"),
+        "itens": [f.get("description") for f in (ac.get("features") or [])],
+        "observacoes": ac.get("notes"),
+        "loja": "Ellegance Automóveis"
+    }
 
-# avaliar, adicionar confianca, de modo que caso a confianca seja < 0.5, mandar pra um atendente de vdd?
+    interaction_ctx = ctx["interactions"]
+
+    return { "loja": store_ctx, "carro desejado pelo cliente": car_ctx, "conversa": interaction_ctx }
+
+
+def define_intent(ctx: dict) -> str:
+    llm = get_llm()
+    system_msg = INTENT_PROMPT.format(json.dumps(ctx["interactions"], ensure_ascii=False, indent=2))
+
+    resposta = llm.invoke(system_msg)
+    return (getattr(resposta, "content", "") or "").strip()
+
+
+
+def generate_message(ctx: Dict[str, Any]):
+    llm = get_llm()
+
+    system_msg = INTERACTION_PROMPT.format(ctx["loja"]["nome"], json.dumps(ctx, ensure_ascii=False, indent=2))
+
+    resposta = llm.invoke(system_msg)
+
+    return (getattr(resposta, "content", None) or "").strip()
+
+
+
+def build_interaction(message: str):
+    return Interaction(
+                origin=InteractionOrigin.STORE,
+                sent_at=datetime.now().time(),
+                content=message,
+            )
