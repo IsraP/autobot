@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 from langchain_community.chat_models import ChatOllama
 
-from application.constants import BUY_QUESTIONS, TRADE_QUESTIONS, INTERACTION_PROMPT, INTENT_PROMPT, INTERACTION_PROMPT_ASK
+from application.constants import BUY_QUESTIONS, TRADE_QUESTIONS, INTERACTION_PROMPT, INTENT_PROMPT, INTERACTION_PROMPT_ASK, BUY_QUESTIONS_SELECTET_CAR
 from domain.context import load_context, save_context
 from domain.schemas import Interaction, InteractionOrigin
 from domain.store import load_store
@@ -61,8 +61,12 @@ def answer(ctx: dict) -> Interaction:
 
 
 def define_next_question(ctx: dict, intent: str):
+    car = ctx.get("car")
     if intent == "BUY":
-        question_list = BUY_QUESTIONS
+        if not car: 
+            question_list = BUY_QUESTIONS
+        else:
+            question_list = BUY_QUESTIONS_SELECTET_CAR
     else :
         question_list = TRADE_QUESTIONS
 
@@ -136,7 +140,7 @@ def define_intent(ctx: dict) -> str:
 
     
     resposta = llm.invoke(system_msg)
-    print(resposta)
+
     return (getattr(resposta, "content", "") or "").strip()
 
 

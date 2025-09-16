@@ -37,6 +37,16 @@ BUY_QUESTIONS = [
     "Você gostaria que eu simulasse parcelas para o financiamento?",
 ]
 
+BUY_QUESTIONS_SELECTET_CAR = [
+    "Qual faixa de preço você está buscando?",
+    "Prefere pagamento à vista, financiamento ou consórcio?",
+    "Você já tem algum valor de entrada disponível?",
+    "Qual a sua urgência para fechar a compra?",
+    "Você gostaria de agendar uma visita ou test drive?",
+    "Deseja receber fotos, vídeos ou a ficha técnica do veículo?",
+    "Você gostaria que eu simulasse parcelas para o financiamento?",
+]
+
 TRADE_QUESTIONS = [
     "Você pretende dar um carro como parte do pagamento?",
     "Qual o modelo, ano e versão do seu veículo atual?",
@@ -100,7 +110,7 @@ Regras importantes:
 
 Objetivo:
 Seu objetivo é parecer um atendente humano
-Faça a seguinte pergunta ao cliente de forma útil e clara, dando prosseguimento ao processo de venda (Voce pode melhorar  a pergunta se necessario): {}.
+Faça a seguinte pergunta ao cliente de forma útil e clara, dando prosseguimento ao processo de venda (Voce pode melhorar  a pergunta se necessario, mas sem perder a objetividade, também não e necessario dar informaçoes além do necessario para responder a pergunta): {}.
 
 Contexto da conversa (base ÚNICA para sua resposta):
 {}
