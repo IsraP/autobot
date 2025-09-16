@@ -101,7 +101,20 @@ body {
     &:hover { background: darken($primary, 10%); }
   }
 }
+.btn_basico {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-weight: bold;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  background: $primary;
+  color: $secondary;
+  &:hover { background: darken($primary, 40%); }
 
+}
 // ====================
 // CHAT PAGE
 // ====================
@@ -180,15 +193,35 @@ body.chat-body {
   &__status { margin: 0; font-size: 0.85rem; color: $text-light; }
 
   &__messages {
-    flex: 1;
+    flex: 5;
     padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     overflow-y: auto;
   }
+  &__sendMessage{
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    overflow-y: auto;
+    height: 100px;
+    
+    background: lighten($primary, 30%);
+  }
 }
-
+.message__area{
+  flex:9;
+}
+.button__area{
+  flex:1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
 .message {
   max-width: 65%;
   padding: 0.6rem 0.8rem;

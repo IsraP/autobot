@@ -43,4 +43,12 @@
           </div>
         }
       </section>
+      <div class="chat__sendMessage">
+        <textarea class="message__area" [(ngModel)]="mensagemGeradaTexto" id=""></textarea>
+        <div class="button__area">
+          <button  class="btn_basico " (click)="GerarMensagem()">Gerar Mensagem</button>
+          <button  class="btn_basico ">Enviar Mensagem</button>
+        </div>
+        
+      </div>
     </main>
